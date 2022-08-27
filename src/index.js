@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
+import ToggleButton from 'react-toggle-button';
 
 function Square(props) {
     return (
@@ -49,6 +50,7 @@ class Game extends React.Component {
             }],
             stepNumber: 0,
             xIsNext: true,
+            historyIsIncreasing: true,
         };
     }
 
@@ -88,18 +90,23 @@ class Game extends React.Component {
                 'Go to game start';
             if (move === this.state.stepNumber) {
                 return (
-                    <li key={move}>
+                    <li key={move} style={{
+                        order: this.state.historyIsIncreasing ? move : -move
+                    }}>
                         <button onClick={() => this.jumpTo(move)}><b>{desc}</b></button>
                     </li>
                 );
             } else {
                 return (
-                    <li key={move}>
+                    <li key={move} style={{
+                        order: this.state.historyIsIncreasing ? move : -move
+                    }}>
                         <button onClick={() => this.jumpTo(move)}>{desc}</button>
                     </li>
                 );
             }
         });
+
 
         let status;
         if (winner) {
@@ -117,9 +124,19 @@ class Game extends React.Component {
                 </div>
                 <div className="game-info">
                     <div>{status}</div>
-                    <ol>{moves}</ol>
+                    <ol style={{ display: 'flex', flexDirection: 'column' }}>{moves}</ol>
+                    <div>{"increasing order"}
+                        <ToggleButton
+                            value={this.state.historyIsIncreasing || false}
+                            onToggle={(value) => {
+                                this.setState({
+                                    historyIsIncreasing: !value,
+                                })
+                            }}
+                        />
+                    </div>
                 </div>
-            </div>
+            </div >
         );
     }
 }
