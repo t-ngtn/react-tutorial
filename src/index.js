@@ -5,18 +5,19 @@ import ToggleButton from 'react-toggle-button';
 
 function Square(props) {
     return (
-        <button className='square' onClick={props.onClick}>
+        <button className='square' onClick={props.onClick} style={{ color: props.isWin ? "red" : "black" }}>
             {props.value}
         </button>
     );
 }
 
 class Board extends React.Component {
-    renderSquare(i) {
+    renderSquare(i, isWin) {
         return (
             <Square
                 value={this.props.squares[i]}
                 onClick={() => this.props.onClick(i)}
+                isWin={isWin}
                 key={i}
             />
         );
@@ -28,7 +29,8 @@ class Board extends React.Component {
         for (var i = 0; i < 3; i++) {
             let _list = []
             for (var j = 0; j < 3; j++) {
-                _list.push(this.renderSquare(i * 3 + j))
+                const isWin = this.props.win_line.includes(i * 3 + j);
+                _list.push(this.renderSquare(i * 3 + j, isWin))
             }
             list.push(<div className="board-row" key={i}>{_list}</div>)
         }
@@ -58,7 +60,8 @@ class Game extends React.Component {
         const history = this.state.history.slice(0, this.state.stepNumber + 1);
         const current = history[history.length - 1];
         const squares = current.squares.slice();
-        if (calculateWinner(squares) || squares[i]) {
+        const [winner, _] = calculateWinner(squares); // eslint-disable-line no-unused-vars
+        if (winner || squares[i]) {
             return;
         }
         squares[i] = this.state.xIsNext ? 'X' : 'O';
@@ -82,7 +85,7 @@ class Game extends React.Component {
     render() {
         const history = this.state.history;
         const current = history[this.state.stepNumber];
-        const winner = calculateWinner(current.squares);
+        const [winner, win_line] = calculateWinner(current.squares);
 
         const moves = history.map((step, move) => {
             const desc = move ?
@@ -120,6 +123,7 @@ class Game extends React.Component {
                     <Board
                         squares={current.squares}
                         onClick={(i) => this.handleClick(i)}
+                        win_line={win_line}
                     />
                 </div>
                 <div className="game-info">
@@ -160,8 +164,8 @@ function calculateWinner(squares) {
     for (let i = 0; i < lines.length; i++) {
         const [a, b, c] = lines[i];
         if (squares[a] && squares[a] === squares[b] && squares[a] === squares[c]) {
-            return squares[a];
+            return [squares[a], [a, b, c]];
         }
     }
-    return null;
+    return [null, []];
 }
